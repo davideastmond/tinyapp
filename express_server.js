@@ -7,6 +7,23 @@ app.set("view engine", "ejs"); // Set EJS as the default templating engine
 app.use(bodyParser.urlencoded({extended: true}));
 var PORT = 8080; // default port 8080
 
+function generateRandomString() {
+  /** This function generates a string of random alpha numeric characters */
+  const validChars = "abcdefghijklmnopqrstuvwxyz1234567890";
+
+  let returnString = "";
+  for (let i = 0; i < 6; i++) {
+    let randomNumber = Math.floor(Math.random() * (validChars.length - 1 - 0) + 0);
+    let shouldCap = Math.floor(Math.random() * (2 - 0) + 0);
+    if (shouldCap === 1) {
+      returnString += validChars[randomNumber].toUpperCase();
+    } else {
+      returnString += validChars[randomNumber];
+    }
+  }
+  return returnString;
+}
+
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
