@@ -10,6 +10,9 @@
   <title>TinyApp</title>
 </head>
 <body style="font-size:20px; padding:50px;">
+    <header>
+        <% include ../partials/header %>
+    </header>
   <ul>
     <% for (let url in urls) { %>
         <li><%= url %> - <%= " : " + urls[url] %></li>
