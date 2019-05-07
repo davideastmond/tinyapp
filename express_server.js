@@ -1,5 +1,6 @@
 var express = require("express");
 var app = express();
+app.set("view engine", "ejs"); // Set EJS as the default templating engine
 var PORT = 8080; // default port 8080
 
 var urlDatabase = {
@@ -21,4 +22,10 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+// Route handler for the URLS
+app.get("/urls", (req, res)=> {
+  let templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
 });
