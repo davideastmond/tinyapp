@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <% include ../partials/header %>
+  
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -11,13 +11,15 @@
 </head>
 <body style="font-size:20px; padding:50px;">
     <header>
-        <% include ../partials/header %>
+        <% include ./partials/_header %>
     </header>
+    <a href="#">Create new TinyURL</a>
+    <h2> My URLs</h2>
   <ul>
     <% for (let url in urls) { %>
         <li><%= url %> - <%= " : " + urls[url] %></li>
     <% } %>
 </ul>
-<a href="#"> Get new link</a>
+
 </body>
 </html>
