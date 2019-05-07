@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/davideastmond/tinyapp/issues"
   },
-  "homepage": "https://github.com/davideastmond/tinyapp#readme"
+  "homepage": "https://github.com/davideastmond/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
 }
