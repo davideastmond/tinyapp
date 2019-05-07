@@ -48,6 +48,7 @@ app.get("/hello", (req, res) => {
 // Route handler for the URLS
 app.get("/urls", (req, res)=> {
   let templateVars = { urls: urlDatabase };
+  
   res.render("urls_index", templateVars);
 });
 
@@ -63,4 +64,9 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
+
+  // Add to the url
+  let randomString = generateRandomString();
+  urlDatabase[randomString] = req.body.longURL;
+  
 });
