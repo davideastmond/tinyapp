@@ -63,10 +63,20 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
-
+  
+  if (!req.body.longURL.startsWith("http://")) {
+    req.body.longURL = "http://" + req.body.longURL;
+  }
   // Add to the url
   let randomString = generateRandomString();
   urlDatabase[randomString] = req.body.longURL;
+  res.redirect("/urls/" + randomString);
+  console.log(urlDatabase);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  console.log("long URL IS: " + longURL);
   
+  res.redirect(longURL);
 });
