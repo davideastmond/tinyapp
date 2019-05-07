@@ -1,6 +1,10 @@
 var express = require("express");
+const bodyParser = require("body-parser");
+
+
 var app = express();
 app.set("view engine", "ejs"); // Set EJS as the default templating engine
+app.use(bodyParser.urlencoded({extended: true}));
 var PORT = 8080; // default port 8080
 
 var urlDatabase = {
@@ -37,4 +41,9 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
+});
+
+app.post("/urls", (req, res) => {
+  console.log(req.body);  // Log the POST request body to the console
+  res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
