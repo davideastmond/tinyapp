@@ -73,7 +73,13 @@ app.post("/urls", (req, res) => {
   res.redirect("/urls/" + randomString);
   console.log(urlDatabase);
 });
-app.post("/urls/:shortURL/delete")
+app.post("/urls/:shortURL/delete", (req, res) => {
+  // Deletes a URL from the object
+  const shortURL = req.params.shortURL;
+  
+  delete urlDatabase[shortURL];
+  console.log(urlDatabase); 
+});
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
