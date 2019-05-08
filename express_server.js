@@ -96,6 +96,15 @@ app.post("/urls/:shortURL/update", (req, res)=> {
   res.redirect("/urls");
 });
 
+app.post("/login", (req, res)=> {
+  const username = req.body.username;
+  console.log("got a login username: ", username);
+
+  // set a cookie w/ username as a value and re-direct
+  res.cookie('username', username); 
+  res.redirect("/urls");
+});
+
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   console.log("long URL IS: " + longURL);
