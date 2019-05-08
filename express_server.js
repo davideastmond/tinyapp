@@ -1,10 +1,12 @@
 var express = require("express");
+var cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 
 
 var app = express();
 app.set("view engine", "ejs"); // Set EJS as the default templating engine
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 var PORT = 8080; // default port 8080
 
 function generateRandomString() {
@@ -55,17 +57,20 @@ app.get("/hello", (req, res) => {
 
 // Route handler for the URLS
 app.get("/urls", (req, res)=> {
-  let templateVars = { urls: urlDatabase };
+  
+  let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = {username: req.cookies["username"]}
+  res.render("urls_new", templateVars );
+  
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
   res.render("urls_show", templateVars);
 });
 
@@ -93,6 +98,21 @@ app.post("/urls/:shortURL/update", (req, res)=> {
   longURL = cleanURL(longURL);
 
   urlDatabase[shortURL] = longURL;
+  res.redirect("/urls");
+});
+
+app.post("/login", (req, res)=> {
+  const username = req.body.username;
+  console.log("got a login username: ", username);
+
+  // set a cookie w/ username as a value and re-direct
+  res.cookie('username', username); 
+  res.redirect("/urls");
+});
+
+app.post("/logout", (req, res)=> {
+  // User has clicked the log out button. Clear the cookie and direct them to the urls
+  res.clearCookie('username');
   res.redirect("/urls");
 });
 
