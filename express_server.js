@@ -110,6 +110,12 @@ app.post("/login", (req, res)=> {
   res.redirect("/urls");
 });
 
+app.post("/logout", (req, res)=> {
+  // User has clicked the log out button. Clear the cookie and direct them to the urls
+  res.clearCookie('username');
+  res.redirect("/urls");
+});
+
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   console.log("long URL IS: " + longURL);
