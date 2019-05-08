@@ -23,6 +23,14 @@ function generateRandomString() {
   }
   return returnString;
 }
+function cleanURL(inputURL) {
+  // adds http to a URL w/ out the HTTP
+  let returnURL = inputURL;
+  if (!inputURL.startsWith("http://")) {
+    returnURL = "http://" + inputURL;
+  }
+  return returnURL;
+}
 
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -64,9 +72,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
   
-  if (!req.body.longURL.startsWith("http://")) {
-    req.body.longURL = "http://" + req.body.longURL;
-  }
+  req.body.longURL = cleanURL(req.body.longURL);
   // Add to the url
   let randomString = generateRandomString();
   urlDatabase[randomString] = req.body.longURL;
@@ -79,6 +85,16 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[shortURL];
 
   res.redirect("/urls");
+});
+
+app.post("/urls/:shortURL/update", (req, res)=> {
+  const shortURL = req.params.shortURL;
+  const longURL = req.body.longURL;
+  if (!longURL.startsWith("http://")) {
+    longURL = "http://" + longURL;
+  }
+
+  console.log("update for ", shortURL,  " ", longURL);
 });
 
 app.get("/u/:shortURL", (req, res) => {
