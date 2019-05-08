@@ -89,12 +89,11 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/urls/:shortURL/update", (req, res)=> {
   const shortURL = req.params.shortURL;
-  const longURL = req.body.longURL;
-  if (!longURL.startsWith("http://")) {
-    longURL = "http://" + longURL;
-  }
+  let longURL = req.body.longURL;
+  longURL = cleanURL(longURL);
 
-  console.log("update for ", shortURL,  " ", longURL);
+  urlDatabase[shortURL] = longURL;
+  res.redirect("/urls");
 });
 
 app.get("/u/:shortURL", (req, res) => {
