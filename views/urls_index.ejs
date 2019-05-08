@@ -18,6 +18,8 @@
   <ul>
     <% for (let url in urls) { %>
         <li><%= url %> - <%= " : " + urls[url] %></li>
+        <form method="POST" action="/urls/<%= url %>/delete" id="form<%= url %>"> </form>
+        <button type="submit" value="Delete" form="form<%= url %>">Delete</button>
     <% } %>
 </ul>
 
