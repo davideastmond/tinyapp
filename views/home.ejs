@@ -7,18 +7,15 @@
 
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-  <title>TinyApp</title>
+  <title> - Welcome</title>
 </head>
 <body style="font-size:20px; padding:50px;">
-  <header>
-      <% include ./partials/_header %>
-  </header>
-  <%= shortURL %> - <%= longURL %>
-  <form action="/urls/<%= shortURL%>/update" method="POST" id="form<%= shortURL %>">
-    <input type="text" name="longURL" placeholder="<%= longURL %>">
-    <button type="submit" value="update"> Update </button>
-  </form>
-  <a href="/urls">Back to my URLs</a>
-  
+    <header>
+        <% include ./partials/_header %>
+    </header>
+    <br>
+    <h2><em>The</em> site for shortening the URLs to your favourite pages!</h2>
+    <a href="/register"> Register </a> or <a href="/login">Login</a>
+    
 </body>
-</html
+</html>

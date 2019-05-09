@@ -1,15 +1,14 @@
 <!-- Login section of the header -->
-<% if (!username) {%>
-  <form method="POST" action="/login">
-    <input type="text" placeholder="username" name="username">
-    <button type="submit">Login</button>
-  </form> 
+<h4><a href= "/urls/">TinyApp</a></h4>
+<br>
+<% if (!user) {%>
+    <a href="/register"> Register | </a>
+    <a href="/login"> Login </a>
 <%} else { %>
   <form method="POST" action="/logout">
-    Logged in as <%= username %>
+    Logged in as <%= user.email %>
     <button type="submit">Logout</button>
   </form> 
 <%} %>
-<a href= "/urls/"><h1> TinyApp </h1></a>
-<a href="/urls/new">Create new TinyURL</a>
+<hr>
 

@@ -7,21 +7,18 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
-    <title>New URL - TinyApp Example</title>
+    <title>TinyApp - Registration</title>
   </head>
 
   <body style="font-size:20px; padding:50px;">
-    <header>
-      <% include partials/_header %>
-    </header>
-    <h3>Create TinyURL</h3>
-    <form class="form-inline" action="/urls" method="POST">
-      <div class="form-group mb-2">
-        <label for="longURL">Enter a URL:</label>
-        <input class="form-control" type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em">
-        <button type="submit" class="btn btn-primary">Submit</button>
-      </div>
+    
+    <h2>TinyApp</h2>
+    <h4> Enter your information to register for the TinyApp service</h4>
+    <form action="/register" method="POST">
+      <input type="email" name="email" placeholder="e-mail" required><br>
+      <input type="password" name="password" placeholder="password" required><br>
+      <button type="submit">Register</button>
     </form>
+    <a href="/">Home</a>
   </body>
-  
 </html>
