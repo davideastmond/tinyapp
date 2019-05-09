@@ -54,7 +54,9 @@ const users = {
 }
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  // This should be a landing page
+  let tempVars = {username: "null"};
+  res.render("home", tempVars);
 });
 
 app.listen(PORT, () => {
@@ -143,5 +145,20 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/register", (req, res)=> {
-  // handles registration submission
+  // handles registration submission.
+
+  // Retrieve the username and password
+  const gemail = req.body.email;
+  const gpassword = req.body.password;
+  const gid = generateRandomString(); // generate unique ID
+  
+  // Create an object
+  const newUserObject =  {
+    id: gid,
+    email:gemail,
+    password: gpassword
+  }
+  users[gid] = newUserObject; // append to the object data base
+  console.log(users);
+
 })

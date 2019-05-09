@@ -1,5 +1,5 @@
 <!-- Login section of the header -->
-<% if (!username) {%>
+<% if (!username || username=== "null") {%>
   <form method="POST" action="/login">
     <input type="text" placeholder="username" name="username">
     <button type="submit">Login</button>
