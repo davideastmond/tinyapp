@@ -76,12 +76,18 @@ const users = {
   "userRandomID": {
   id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: "purple-monkey-dinosaur",
+    urls: {
+      "n1X8y6": "http://www.light.com"
+    }
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: "dishwasher-funk",
+    urls: {
+      "z7HJ#F": "http://www.nbc.com"
+    }
   }
 }
 
@@ -226,7 +232,9 @@ app.post("/register", (req, res)=> {
   const newUserObject =  {
     id: gid,
     email:gemail,
-    password: gpassword
+    password: gpassword,
+    urls: {
+    }
   }
   users[gid] = newUserObject; // append to the object data base
   // set a cookie containing the newly generated ID
