@@ -67,8 +67,9 @@ function validateUser(pEmail, pPwd) {
 }
 
 var urlDatabase = {
-  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userID: "userRandomID"},
-  "9sm5xK": {longURL: "http://www.google.com", userID: "user2RandomID"}
+  b2xVn2: {longURL: "http://www.lighthouselabs.ca", userID: "userRandomID"},
+  ism5xK: {longURL: "http://www.google.com", userID: "user2RandomID"},
+  u587Yn: {longURL: "http://www.abc.go.com", userID: "userRandomID"}
 };
 
 function urlsForUser(id) {
@@ -80,6 +81,16 @@ function urlsForUser(id) {
     }
   }
   return returnObject;
+}
+
+function updateURLDatabase(forID, forShortURL, withLongURL) {
+  if (urlDatabase[forShortURL].userID === forID) {
+    urlDatabase[forShortURL].longURL = withLongURL;  
+  } else {
+    console.log("updating urldb ", urlDatabase[forShortURL])
+    return -1;
+  }
+  return 0;
 }
 
 // Database for users
@@ -116,14 +127,16 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-// Route handler for the URLS
+// Route handler for the URLs Index
 app.get("/urls", (req, res)=> {
   let userObject = users[req.cookies["user_id"]];
   if (!userObject) {
     console.log("Not authenticated: redirecting");
     res.redirect("/");
   } else {
-    let templateVars = { urls: urlDatabase, user: userObject };
+    // Instead of sending the entire database, send a filtered version
+    let filtered_db = urlsForUser(userObject.id);
+    let templateVars = { urls: filtered_db, user: userObject };
     res.render("urls_index", templateVars);
   }
   
@@ -134,7 +147,6 @@ app.get("/urls/new", (req, res) => {
 
   if (!userObject) {
     console.log("User not logged in, redirecting");
-    
     res.redirect("/login");
     return;
   }
@@ -153,7 +165,13 @@ app.get("/urls/:shortURL", (req, res) => {
     console.log("User not authenticated: redirecting");
     res.redirect("/");
   }
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: userObject };
+  
+  // Get a filtered list and then only show that particular shortURL
+  let filteredURLs = urlsForUser(userObject.id);
+  //console.log("user object ID: ", userObject.id);
+  console.log(filteredURLs);
+  console.log("edit filtered URL ", filteredURLs[req.params.shortURL]);
+  let templateVars = { shortURL: req.params.shortURL, longURL: filteredURLs[req.params.shortURL].longURL, user: userObject };
   res.render("urls_show", templateVars);
 });
 
@@ -163,14 +181,23 @@ app.get("/login", (req, res) => {
 })
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  
+  let userObject = users[req.cookies["user_id"]];
+  if (!userObject) {
+    console.log("User not logged in");
+    res.redirect("/");
+    return;
+  } 
+  // console.log(urlDatabase);
   req.body.longURL = cleanURL(req.body.longURL);
   // Add to the url
+  
   let randomString = generateRandomString();
-  urlDatabase[randomString] = req.body.longURL;
-  res.redirect("/urls/" + randomString);
-  console.log(urlDatabase);
+  
+  console.log("line 198 --- ", newURLEntry);
+
+  // Create a new entry in the urlDatabase object
+  urlDatabase[randomString] = {longURL: req.body.longURL, userID: userObject.id, address: { street: 'king'}};
+  res.redirect("/urls/" + randomString); 
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -182,12 +209,27 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL/update", (req, res)=> {
+  // Update a specific url by userID /
   const shortURL = req.params.shortURL;
   let longURL = req.body.longURL;
   longURL = cleanURL(longURL);
+  console.log(shortURL, " ", longURL);
 
-  urlDatabase[shortURL] = longURL;
-  res.redirect("/urls");
+  let userObject = users[req.cookies["user_id"]];
+  if (!userObject) {
+    console.log("User not authenticated: redirecting");
+    res.redirect("/");
+  } else {
+    let result = updateURLDatabase(userObject.id, shortURL, longURL);
+    if (result < 0) {
+      console.log("There was a problem updating the URL entry.");
+    } else {
+      console.log("URL UPDATE should be good");
+      res.redirect("/urls");
+    }
+  }
+
+  
 });
 
 app.post("/login", (req, res)=> {

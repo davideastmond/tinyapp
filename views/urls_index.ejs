@@ -17,7 +17,7 @@
   <ul>
     <% for (let url in urls) { %>
       <div>
-        <li><%= url %> - <%= "" + urls[url] %> <a href="<%= urls[url] %>">Open</a> | <a href="/urls/<%= url %>">Edit</a>
+        <li><%= url %> - <%= "" + urls[url].longURL %> <a href="<%= urls[url] %>">Open</a> | <a href="/urls/<%= url %>">Edit</a>
         <form method="POST" action="/urls/<%= url %>/delete"> 
           <button type="submit" value="Delete" form="form<%= url %>" style="background-color: red">Delete</button>
         </form></li>
