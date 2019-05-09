@@ -43,6 +43,7 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+// Start listening process
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
