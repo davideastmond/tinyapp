@@ -38,7 +38,7 @@ function checkEmailExists(pEmail) {
   // function returns true if an e-mail exists in the data base
   //console.log("Quering e-mail: ", pEmail);
   for (userObject in users) {
-    console.log(users[userObject].email);
+    //console.log(users[userObject].email);
     
     // move through the users objects
     if (users[userObject].email.toLowerCase() === pEmail.toLowerCase()) {
@@ -49,6 +49,23 @@ function checkEmailExists(pEmail) {
   return false; 
 }
 
+function validateUser(pEmail, pPwd) {
+  // validates a email / password and returns a user object if validation is good
+  for (userObject in users) {
+    //console.log(users[userObject].email);
+    
+    // move through the users objects
+    if (users[userObject].email.toLowerCase() === pEmail.toLowerCase()) {
+      //console.log("returned true!");
+      if (users[userObject].password === pPwd) {
+        return users[userObject];
+      }
+    }
+  }
+  console.log("User not found / e-mail or password invalid");
+  return null;
+}
+
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -57,7 +74,7 @@ var urlDatabase = {
 // Database for users
 const users = { 
   "userRandomID": {
-    id: "userRandomID", 
+  id: "userRandomID", 
     email: "user@example.com", 
     password: "purple-monkey-dinosaur"
   },
@@ -111,6 +128,11 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.get("/login", (req, res) => {
+  // Will render a login page to the client
+  res.render("login");
+})
+
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
   
@@ -140,17 +162,33 @@ app.post("/urls/:shortURL/update", (req, res)=> {
 });
 
 app.post("/login", (req, res)=> {
-  const username = req.body.username;
-  console.log("got a login username: ", username);
+  // retrieve values from the body
+  const email = req.body.email;
+  const password = req.body.password;
+  console.log("got a login e-mail: ", email, password);
 
-  // set a cookie w/ username as a value and re-direct
-  res.cookie('username', username); 
-  res.redirect("/urls");
+  // Look up the e-mail in the DB
+  if(checkEmailExists(email))
+  {
+    // E-mail exists, validate the user
+    let userObj = validateUser(email, password);
+    if (userObj === null) {
+      console.log(email, " ", password);
+      console.log("object", userObj);
+      res.sendStatus(403);
+      return;
+    } else {
+      // checks should pass
+      console.log(`User ${userObj.email} has been successfully authenticated`);
+      res.cookie('user_id', userObj.id);
+      res.redirect('/urls');
+    }
+  }
 });
 
 app.post("/logout", (req, res)=> {
   // User has clicked the log out button. Clear the cookie and direct them to the urls
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
@@ -164,7 +202,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/register", (req, res)=> {
   // handles registration submission.
 
-  // Retrieve the username and password
+  // Retrieve the e-mail and password from the body
   const gemail = req.body.email;
   const gpassword = req.body.password;
   const gid = generateRandomString(); // generate unique ID

@@ -1,12 +1,9 @@
 <!-- Login section of the header -->
-<a href= "/urls/">TinyApp</a>
+<h4><a href= "/urls/">TinyApp</a></h4>
+<br>
 <% if (!user) {%>
-  <form method="POST" action="/login">
-    <input type="text" placeholder="email" name="email">
-    <input type="password" name="password" placeholder="password">
-    <button type="submit">Login</button>
-    <a href="/register"> Register</a>
-  </form> 
+    <a href="/register"> Register | </a>
+    <a href="/login"> Login </a>
 <%} else { %>
   <form method="POST" action="/logout">
     Logged in as <%= user.email %>
