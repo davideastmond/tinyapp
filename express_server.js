@@ -39,6 +39,20 @@ var urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// Database for users
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -127,3 +141,7 @@ app.get("/u/:shortURL", (req, res) => {
   
   res.redirect(longURL);
 });
+
+app.post("/register", (req, res)=> {
+  // handles registration submission
+})
