@@ -67,27 +67,32 @@ function validateUser(pEmail, pPwd) {
 }
 
 var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userID: "userRandomID"},
+  "9sm5xK": {longURL: "http://www.google.com", userID: "user2RandomID"}
 };
+
+function urlsForUser(id) {
+  // returns the URLs where the userID is equal to the id of the currently logged in user
+  let returnObject = {};
+  for (let urlObject in urlDatabase) {
+    if (urlDatabase[urlObject].userID === id) {
+      returnObject[urlObject] = urlDatabase[urlObject];
+    }
+  }
+  return returnObject;
+}
 
 // Database for users
 const users = { 
   "userRandomID": {
   id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur",
-    urls: {
-      "n1X8y6": "http://www.light.com"
-    }
+    password: "purple-monkey-dinosaur"
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk",
-    urls: {
-      "z7HJ#F": "http://www.nbc.com"
-    }
+    password: "dishwasher-funk"
   }
 }
 
@@ -114,12 +119,25 @@ app.get("/hello", (req, res) => {
 // Route handler for the URLS
 app.get("/urls", (req, res)=> {
   let userObject = users[req.cookies["user_id"]];
-  let templateVars = { urls: urlDatabase, user: userObject };
-  res.render("urls_index", templateVars);
+  if (!userObject) {
+    console.log("Not authenticated: redirecting");
+    res.redirect("/");
+  } else {
+    let templateVars = { urls: urlDatabase, user: userObject };
+    res.render("urls_index", templateVars);
+  }
+  
 });
 
 app.get("/urls/new", (req, res) => {
   let userObject = users[req.cookies["user_id"]];
+
+  if (!userObject) {
+    console.log("User not logged in, redirecting");
+    
+    res.redirect("/login");
+    return;
+  }
   let templateVars = { user: userObject };
   res.render("urls_new", templateVars );
   
@@ -131,6 +149,10 @@ app.get("/register", (req, res)=> {
 
 app.get("/urls/:shortURL", (req, res) => {
   let userObject = users[req.cookies["user_id"]];
+  if (!userObject) {
+    console.log("User not authenticated: redirecting");
+    res.redirect("/");
+  }
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: userObject };
   res.render("urls_show", templateVars);
 });
@@ -232,9 +254,7 @@ app.post("/register", (req, res)=> {
   const newUserObject =  {
     id: gid,
     email:gemail,
-    password: gpassword,
-    urls: {
-    }
+    password: gpassword
   }
   users[gid] = newUserObject; // append to the object data base
   // set a cookie containing the newly generated ID
