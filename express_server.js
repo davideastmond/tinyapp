@@ -34,6 +34,21 @@ function cleanURL(inputURL) {
   return returnURL;
 }
 
+function checkEmailExists(pEmail) {
+  // function returns true if an e-mail exists in the data base
+  //console.log("Quering e-mail: ", pEmail);
+  for (userObject in users) {
+    console.log(users[userObject].email);
+    
+    // move through the users objects
+    if (users[userObject].email.toLowerCase() === pEmail.toLowerCase()) {
+      //console.log("returned true!");
+      return true;
+    }
+  }
+  return false; 
+}
+
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -55,7 +70,8 @@ const users = {
 
 app.get("/", (req, res) => {
   // This should be a landing page
-  let tempVars = {username: "null"};
+  let userObject = users[req.cookies["user_id"]];
+  let tempVars = {user: userObject};
   res.render("home", tempVars);
 });
 
@@ -73,14 +89,14 @@ app.get("/hello", (req, res) => {
 
 // Route handler for the URLS
 app.get("/urls", (req, res)=> {
-  
-  let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
-  
+  let userObject = users[req.cookies["user_id"]];
+  let templateVars = { urls: urlDatabase, user: userObject };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = {username: req.cookies["username"]}
+  let userObject = users[req.cookies["user_id"]];
+  let templateVars = { user: userObject };
   res.render("urls_new", templateVars );
   
 });
@@ -90,7 +106,8 @@ app.get("/register", (req, res)=> {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
+  let userObject = users[req.cookies["user_id"]];
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: userObject };
   res.render("urls_show", templateVars);
 });
 
@@ -152,6 +169,18 @@ app.post("/register", (req, res)=> {
   const gpassword = req.body.password;
   const gid = generateRandomString(); // generate unique ID
   
+  // Validate incoming data as per assignment instructions
+  if (!gemail || !gpassword) {
+    res.statusMessage = "Email address and/or password are not in a valid format";
+    res.sendStatus(400); // Send a 404 error response
+    return; // 
+  }
+  if (checkEmailExists(gemail)) {
+    // if true, a matching e-mail has been found. Return a status 404
+    res.statusMessage = "Email address already exists in the database."
+    res.sendStatus(400);
+    return;
+  }
   // Create an object
   const newUserObject =  {
     id: gid,
@@ -159,6 +188,7 @@ app.post("/register", (req, res)=> {
     password: gpassword
   }
   users[gid] = newUserObject; // append to the object data base
-  console.log(users);
-
+  // set a cookie containing the newly generated ID
+  res.cookie('user_id', gid);
+  res.redirect('/urls');
 })
