@@ -175,7 +175,7 @@ app.post("/login", (req, res)=> {
     if (userObj === null) {
       console.log(email, " ", password);
       console.log("object", userObj);
-      res.sendStatus(403);
+      res.sendStatus(401);
       return;
     } else {
       // checks should pass
@@ -183,13 +183,15 @@ app.post("/login", (req, res)=> {
       res.cookie('user_id', userObj.id);
       res.redirect('/urls');
     }
+  } else {
+    res.sendStatus(401);
   }
 });
 
 app.post("/logout", (req, res)=> {
-  // User has clicked the log out button. Clear the cookie and direct them to the urls
+  // User has clicked the log out button. Clear the cookie and direct them to the home page
   res.clearCookie('user_id');
-  res.redirect("/urls");
+  res.redirect("/");
 });
 
 app.get("/u/:shortURL", (req, res) => {
