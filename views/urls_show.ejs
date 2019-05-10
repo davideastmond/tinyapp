@@ -17,6 +17,7 @@
   <form action="/urls/<%= shortURL%>/update" method="POST" id="form<%= shortURL %>">
     <input type="text" name="longURL" placeholder="<%= longURL %>">
     <button type="submit" value="update"> Update </button>
+    <a href="/urls/<%= shortURL%>/delete">Delete</a>
   </form>
   <a href="/urls">Back to my URLs</a>
   

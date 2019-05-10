@@ -160,6 +160,7 @@ app.get("/register", (req, res)=> {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  // View an individual shortURL entry
   let userObject = users[req.cookies["user_id"]];
   if (!userObject) {
     console.log("User not authenticated: redirecting");
@@ -168,11 +169,19 @@ app.get("/urls/:shortURL", (req, res) => {
   
   // Get a filtered list and then only show that particular shortURL
   let filteredURLs = urlsForUser(userObject.id);
-  //console.log("user object ID: ", userObject.id);
+  console.log(" line 172 - user object ID: ", userObject.id);
   
   let templateVars = { shortURL: req.params.shortURL, longURL: filteredURLs[req.params.shortURL].longURL, user: userObject };
   res.render("urls_show", templateVars);
 });
+
+app.get("/urls/:shortURL/delete", (req, res)=> {
+  // Find the shortURL
+  let shortURL = req.params.shortURL;
+  console.log("line 181 --", shortURL);
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
+})
 
 app.get("/login", (req, res) => {
   // Will render a login page to the client
@@ -264,7 +273,7 @@ app.post("/logout", (req, res)=> {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   console.log("long URL IS: " + longURL);
   
   res.redirect(longURL);
