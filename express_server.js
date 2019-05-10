@@ -11,8 +11,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(cookie_session({
   name: 'session',
-  keys:["password"],
-  maxAge: 24 * 60 * 60 * 1000
+  keys:["password"]
 }))
 var PORT = 8080; // default port 8080
 
@@ -221,7 +220,7 @@ app.post("/urls", (req, res) => {
 
   // Create a new entry in the urlDatabase object
   urlDatabase[randomString] = {longURL: req.body.longURL, userID: userObject.id};
-  res.redirect("/urls/" + randomString); 
+  res.redirect("/urls"); 
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -290,9 +289,7 @@ app.post("/login", (req, res)=> {
 
 app.post("/logout", (req, res)=> {
   // User has clicked the log out button. Clear the cookie and direct them to the home page
-  req.session.user_id = null;
-
-  // res.clearCookie('user_id');
+  req.session = null;
   res.redirect("/");
 });
 
