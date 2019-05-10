@@ -1,5 +1,6 @@
 var express = require("express");
 var cookieParser = require("cookie-parser");
+var cookie_session = require("cookie-session");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 
@@ -8,6 +9,11 @@ var app = express();
 app.set("view engine", "ejs"); // Set EJS as the default templating engine
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
+app.use(cookie_session({
+  name: 'session',
+  keys:["password"],
+  maxAge: 24 * 60 * 60 * 1000
+}))
 var PORT = 8080; // default port 8080
 
 function generateRandomString() {
@@ -96,22 +102,28 @@ function updateURLDatabase(forID, forShortURL, withLongURL) {
 }
 
 // Database for users
-const users = { 
-  "userRandomID": {
-  id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
-  },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
+const users = {};
+
+function createTestUsers(numUsers) {
+  // For testing purposes. Creates default users
+ 
+  for (let i = 0; i < numUsers; i++) {
+    const hashedPassword = bcrypt.hashSync("password", 10);
+    const randomUserID = generateRandomString();
+    const randomEmail = randomUserID + "@mail.com";
+    let defaultUser = {id: randomUserID, email: randomEmail, password: hashedPassword};
+    users[randomUserID] = defaultUser;
   }
+  console.log("line 108 " + numUsers + " users added.");
+  console.log(users);
 }
+createTestUsers(6);
 
 app.get("/", (req, res) => {
   // This should be a landing page
-  let userObject = users[req.cookies["user_id"]];
+  let key = req.session.user_id;
+  let userObject = users[key];
+
   let tempVars = {user: userObject};
   res.render("home", tempVars);
 });
@@ -131,7 +143,8 @@ app.get("/hello", (req, res) => {
 
 // Route handler for the URLs Index
 app.get("/urls", (req, res)=> {
-  let userObject = users[req.cookies["user_id"]];
+  let key = req.session.user_id;
+  let userObject = users[key];
   if (!userObject) {
     console.log("Not authenticated: redirecting");
     res.redirect("/");
@@ -145,8 +158,8 @@ app.get("/urls", (req, res)=> {
 });
 
 app.get("/urls/new", (req, res) => {
-  let userObject = users[req.cookies["user_id"]];
-
+  let key = req.session.user_id;
+  let userObject = users[key];
   if (!userObject) {
     console.log("User not logged in, redirecting");
     res.redirect("/login");
@@ -163,7 +176,8 @@ app.get("/register", (req, res)=> {
 
 app.get("/urls/:shortURL", (req, res) => {
   // View an individual shortURL entry
-  let userObject = users[req.cookies["user_id"]];
+  let key = req.session.user_id;
+  let userObject = users[key];
   if (!userObject) {
     console.log("User not authenticated: redirecting");
     res.redirect("/");
@@ -191,7 +205,9 @@ app.get("/login", (req, res) => {
 })
 
 app.post("/urls", (req, res) => {
-  let userObject = users[req.cookies["user_id"]];
+  let key = req.session.user_id;
+  let userObject = users[key];
+  console.log("206: ", key);
   if (!userObject) {
     console.log("User not logged in");
     res.redirect("/");
@@ -224,7 +240,8 @@ app.post("/urls/:shortURL/update", (req, res)=> {
   longURL = cleanURL(longURL);
   console.log(shortURL, " ", longURL);
 
-  let userObject = users[req.cookies["user_id"]];
+  let key = req.session.user_id;
+  let userObject = users[key];
   if (!userObject) {
     console.log("User not authenticated: redirecting");
     res.redirect("/");
@@ -260,7 +277,10 @@ app.post("/login", (req, res)=> {
     } else {
       // checks should pass
       console.log(`User ${userObj.email} has been successfully authenticated`);
-      res.cookie('user_id', userObj.id);
+      req.session.user_id = userObj.id;
+      
+      console.log("269: ", req.session.user_id);
+      //res.cookie('user_id', userObj.id);
       res.redirect('/urls');
     }
   } else {
@@ -270,7 +290,9 @@ app.post("/login", (req, res)=> {
 
 app.post("/logout", (req, res)=> {
   // User has clicked the log out button. Clear the cookie and direct them to the home page
-  res.clearCookie('user_id');
+  req.session.user_id = null;
+
+  // res.clearCookie('user_id');
   res.redirect("/");
 });
 
@@ -303,7 +325,7 @@ app.post("/register", (req, res)=> {
   }
   // Create an object - hash the password
   let hashedPassword = bcrypt.hashSync(gpassword, 10);
-  console.log("line 306 = ", hashedPassword);
+  
   const newUserObject =  {
     id: gid,
     email:gemail,
@@ -311,6 +333,7 @@ app.post("/register", (req, res)=> {
   }
   users[gid] = newUserObject; // append to the object data base
   // set a cookie containing the newly generated ID
-  res.cookie('user_id', gid);
+  req.session.user_id = gid;
+  //res.cookie('user_id', gid);
   res.redirect('/urls');
 })
