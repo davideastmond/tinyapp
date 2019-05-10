@@ -6,17 +6,16 @@ var cookieParser = require("cookie-parser");
 var cookie_session = require("cookie-session");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
+const app = express();
+const PORT = 8080;
 
-
-var app = express();
-app.set("view engine", "ejs"); // Set EJS as the default templating engine
+app.set("view engine", "ejs"); 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(cookie_session({
   name: 'session',
   keys:["password"]
 }));
-var PORT = 8080; // default port 8080
 
 function generateRandomString() {
   /** This function generates a string of random alpha numeric characters */
@@ -25,7 +24,7 @@ function generateRandomString() {
   let returnString = "";
   for (let i = 0; i < 6; i++) {
     let randomNumber = Math.floor(Math.random() * (validChars.length - 1 - 0) + 0);
-    let shouldCap = Math.floor(Math.random() * (2 - 0) + 0);
+    const shouldCap = Math.floor(Math.random() * (2 - 0) + 0);
     if (shouldCap === 1) {
       returnString += validChars[randomNumber].toUpperCase();
     } else {
