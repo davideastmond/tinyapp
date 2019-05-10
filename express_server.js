@@ -1,3 +1,6 @@
+/*
+HTTP server app that allows users to shorten long URLs much like TinyURL.com and bit.ly do.
+*/
 var express = require("express");
 var cookieParser = require("cookie-parser");
 var cookie_session = require("cookie-session");
@@ -12,7 +15,7 @@ app.use(cookieParser());
 app.use(cookie_session({
   name: 'session',
   keys:["password"]
-}))
+}));
 var PORT = 8080; // default port 8080
 
 function generateRandomString() {
@@ -41,7 +44,7 @@ function cleanURL(inputURL) {
 }
 
 function checkEmailExists(pEmail) {
-  // function returns true if an e-mail exists in the data base
+  // a helper function returns true if an e-mail exists in the data base
   for (let userObject in users) {
     if (users[userObject].email.toLowerCase() === pEmail.toLowerCase()) {
       return true;
@@ -110,20 +113,17 @@ function createTestUsers(numUsers) {
   console.log(users);
 }
 
-
 app.get("/", (req, res) => {
-  /* Renders the home page if the user is  */
+  /* Renders the ho*/
   const key = req.session.user_id;
   const userObject = users[key];
   
   if (userObject) {
     res.redirect("/urls");
     return;
+  } else {
+    res.redirect("/login")
   }
-
-  // If logged in, redirect to urls
-  const tempVars = {user: userObject};
-  res.render("home", tempVars);
 });
 
 app.get("/urls.json", (req, res) => {
@@ -164,8 +164,16 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/register", (req, res)=> {
-  // Will serve up the registration page template
-  res.render("register");
+  /* Will serve up the registration page template. If the user is logged in,
+  redirect them to the urls page*/
+  let key = req.session.user_id;
+  let userObject = users[key];
+  if (!userObject) {
+    // User is not logged in, redirect to login page
+    res.render("register");
+  } else {
+    res.redirect("/urls");
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -337,7 +345,7 @@ app.post("/register", (req, res)=> {
     email:gemail,
     password: hashedPassword
   }
-  
+
   /* append to the object data base
   set a cookie containing the newly generated ID */
   users[gid] = newUserObject; 
