@@ -1,6 +1,7 @@
 var express = require("express");
 var cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt");
 
 
 var app = express();
@@ -57,7 +58,8 @@ function validateUser(pEmail, pPwd) {
     // move through the users objects
     if (users[userObject].email.toLowerCase() === pEmail.toLowerCase()) {
       //console.log("returned true!");
-      if (users[userObject].password === pPwd) {
+      if (bcrypt.compareSync(pPwd, users[userObject].password)) {
+        //if (users[userObject].password === pPwd) {
         return users[userObject];
       }
     }
@@ -299,11 +301,13 @@ app.post("/register", (req, res)=> {
     res.sendStatus(400);
     return;
   }
-  // Create an object
+  // Create an object - hash the password
+  let hashedPassword = bcrypt.hashSync(gpassword, 10);
+  console.log("line 306 = ", hashedPassword);
   const newUserObject =  {
     id: gid,
     email:gemail,
-    password: gpassword
+    password: hashedPassword
   }
   users[gid] = newUserObject; // append to the object data base
   // set a cookie containing the newly generated ID
