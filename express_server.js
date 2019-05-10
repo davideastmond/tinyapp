@@ -313,36 +313,39 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/register", (req, res)=> {
-  // handles registration submission.
+  /* Handles registration submission. It will extract email and password
+  and check for duplicate emails in the db and return the appropriate message.
+  It will also validate the email.
 
-  // Retrieve the e-mail and password from the body
+  Once all is good, generate a unique random userID hash the password and add 
+  the record to the db.
+  */
+  
   const gemail = req.body.email;
   const gpassword = req.body.password;
-  const gid = generateRandomString(); // generate unique ID
+  const gid = generateRandomString(); 
   
-  // Validate incoming data as per assignment instructions
   if (!gemail || !gpassword) {
     res.statusMessage = "Email address and/or password are not in a valid format";
-    res.sendStatus(400); // Send a 404 error response
-    return; // 
+    res.sendStatus(400);
+    return; 
   }
   if (checkEmailExists(gemail)) {
-    // if true, a matching e-mail has been found. Return a status 404
     res.statusMessage = "Email address already exists in the database."
     res.sendStatus(400);
     return;
   }
   // Create an object - hash the password
-  let hashedPassword = bcrypt.hashSync(gpassword, 10);
+  const hashedPassword = bcrypt.hashSync(gpassword, 10);
   
   const newUserObject =  {
     id: gid,
     email:gemail,
     password: hashedPassword
   }
-  users[gid] = newUserObject; // append to the object data base
-  // set a cookie containing the newly generated ID
+  /* append to the object data base
+  set a cookie containing the newly generated ID */
+  users[gid] = newUserObject; 
   req.session.user_id = gid;
-  //res.cookie('user_id', gid);
   res.redirect('/urls');
 })
