@@ -95,24 +95,26 @@ function updateURLDatabase(forID, forShortURL, withLongURL) {
 const users = {};
 
 function createTestUsers(numUsers) {
-  // For testing purposes. Creates default users
+  /** This function creates default users with secure passwords (normally for testing) 
+   * Ensure to call the function
+  */
  
   for (let i = 0; i < numUsers; i++) {
     const hashedPassword = bcrypt.hashSync("password", 10);
     const randomUserID = generateRandomString();
     const randomEmail = randomUserID + "@mail.com";
-    let defaultUser = {id: randomUserID, email: randomEmail, password: hashedPassword};
+    const defaultUser = {id: randomUserID, email: randomEmail, password: hashedPassword};
     users[randomUserID] = defaultUser;
   }
   console.log("line 108 " + numUsers + " users added.");
   console.log(users);
 }
-createTestUsers(6);
+
 
 app.get("/", (req, res) => {
-  // This should be a landing page
-  let key = req.session.user_id;
-  let userObject = users[key];
+  /* Renders the home page if the user is  */
+  const key = req.session.user_id;
+  const userObject = users[key];
   
   if (userObject) {
     res.redirect("/urls");
@@ -120,7 +122,7 @@ app.get("/", (req, res) => {
   }
 
   // If logged in, redirect to urls
-  let tempVars = {user: userObject};
+  const tempVars = {user: userObject};
   res.render("home", tempVars);
 });
 
@@ -139,8 +141,8 @@ app.get("/hello", (req, res) => {
 
 // Route handler for the URLs Index
 app.get("/urls", (req, res)=> {
-  let key = req.session.user_id;
-  let userObject = users[key];
+  const key = req.session.user_id;
+  const userObject = users[key];
 
   if (!userObject) {
     console.log("Not authenticated: redirecting");
@@ -173,8 +175,8 @@ app.get("/register", (req, res)=> {
 
 app.get("/urls/:shortURL", (req, res) => {
   // View an individual shortURL entry
-  let key = req.session.user_id;
-  let userObject = users[key];
+  const key = req.session.user_id;
+  const userObject = users[key];
   if (!userObject) {
     res.sendStatus(401);
     return;
@@ -187,7 +189,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 
   // Get a filtered list and then only show that particular shortURL
-  let filteredURLs = urlsForUser(userObject.id);
+  const filteredURLs = urlsForUser(userObject.id);
 
   // If this object is null, that means the URL does not belong to the currently
   // logged in user; throw a status code 404
@@ -195,56 +197,58 @@ app.get("/urls/:shortURL", (req, res) => {
     res.sendStatus(401);
     return;
   }
-  let templateVars = { shortURL: req.params.shortURL, longURL: filteredURLs[req.params.shortURL].longURL, user: userObject };
+  const templateVars = { shortURL: req.params.shortURL, longURL: filteredURLs[req.params.shortURL].longURL, user: userObject };
   res.render("urls_show", templateVars);
 });
 
 app.get("/login", (req, res) => {
   // If there is a session, redirect to the urls
-  let key = req.session.user_id;
-  let userObject = users[key];
+  const key = req.session.user_id;
+  const userObject = users[key];
+
   if (userObject) {
     res.redirect("/urls");
   } else {
     res.render("login");
   }
- 
 });
 
 app.post("/urls", (req, res) => {
-  let key = req.session.user_id;
-  let userObject = users[key];
+  /* Generates a shortURL (with a randomly generated ID), saves it and 
+  associates it with the user */
+  const key = req.session.user_id;
+  const userObject = users[key];
 
   if (!userObject) {
-    // User not logged
     res.sendStatus(401);
     return;
   } 
   
-  // add the http:// if it's missing
+  // For consistency, clean-up the URL if it's missing the protocol
   req.body.longURL = cleanURL(req.body.longURL);
-  // Add to the url
-  let randomString = generateRandomString();
-
-  // Create a new entry in the urlDatabase object
+  const randomString = generateRandomString();
   urlDatabase[randomString] = {longURL: req.body.longURL, userID: userObject.id};
   res.redirect("/urls/" + randomString); 
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  // Deletes a URL from the object
-
-  // First check if the user is logged in
-  let key = req.session.user_id;
-  let userObject = users[key];
+  /* Deletes a shortURL, but first checks that the request is from the user who created
+  the shortURL. */
+  const key = req.session.user_id;
+  const userObject = users[key];
 
   if (!userObject) {
     res.sendStatus(400);
     return;
-  } 
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect("/urls");
+  }
+
+  if (urlDatabase[shortURL].userID === userObject.id) {
+    const shortURL = req.params.shortURL;
+    delete urlDatabase[shortURL];
+    res.redirect("/urls");
+  } else {
+    res.sendStatus(401);
+  }
 });
 
 app.post("/urls/:shortURL/update", (req, res)=> {
