@@ -126,11 +126,6 @@ app.get("/", (req, res) => {
   res.render("home", tempVars);
 });
 
-// Start listening process
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-// Add a route
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
@@ -213,6 +208,17 @@ app.get("/login", (req, res) => {
   }
 });
 
+app.get("/u/:shortURL", (req, res) => {
+  /* Redirects user to the appropriate longURL provided the shortURL is valid
+  otherwise, return an error */
+  if (!urlDatabase[req.params.shortURL]) {
+    res.sendStatus(404);
+    return;
+  }
+  const longURL = urlDatabase[req.params.shortURL].longURL;
+  res.redirect(longURL);
+});
+
 app.post("/urls", (req, res) => {
   /* Generates a shortURL (with a randomly generated ID), saves it and 
   associates it with the user */
@@ -242,8 +248,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     return;
   }
 
+  const shortURL = req.params.shortURL;
   if (urlDatabase[shortURL].userID === userObject.id) {
-    const shortURL = req.params.shortURL;
     delete urlDatabase[shortURL];
     res.redirect("/urls");
   } else {
@@ -252,19 +258,18 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL/update", (req, res)=> {
-  /** Updates the shortURL */
+  /* Updates the shortURL and re-directs the user */
   const shortURL = req.params.shortURL;
   let longURL = req.body.longURL;
   longURL = cleanURL(longURL);
 
-  let key = req.session.user_id;
-  let userObject = users[key];
+  const key = req.session.user_id;
+  const userObject = users[key];
   if (!userObject) {
     res.redirect("/");
   } else {
     let result = updateURLDatabase(userObject.id, shortURL, longURL);
     if (result < 0) {
-      // Problem updating the database, send appro
       res.sendStatus(400);
     } else {
       res.redirect("/urls");
@@ -302,17 +307,6 @@ app.post("/logout", (req, res)=> {
   res.redirect("/");
 });
 
-app.get("/u/:shortURL", (req, res) => {
-  /* Redirects user to the appropriate longURL provided the shortURL is valid
-  otherwise, return an error */
-  if (!urlDatabase[req.params.shortURL]) {
-    res.sendStatus(404);
-    return;
-  }
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
-});
-
 app.post("/register", (req, res)=> {
   /* Handles registration submission. It will extract email and password
   and check for duplicate emails in the db and return the appropriate message.
@@ -338,15 +332,19 @@ app.post("/register", (req, res)=> {
   }
   // Create an object - hash the password
   const hashedPassword = bcrypt.hashSync(gpassword, 10);
-  
   const newUserObject =  {
     id: gid,
     email:gemail,
     password: hashedPassword
   }
+  
   /* append to the object data base
   set a cookie containing the newly generated ID */
   users[gid] = newUserObject; 
   req.session.user_id = gid;
   res.redirect('/urls');
 })
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
