@@ -169,8 +169,7 @@ app.get("/urls/:shortURL", (req, res) => {
   // Get a filtered list and then only show that particular shortURL
   let filteredURLs = urlsForUser(userObject.id);
   //console.log("user object ID: ", userObject.id);
-  console.log(filteredURLs);
-  console.log("edit filtered URL ", filteredURLs[req.params.shortURL]);
+  
   let templateVars = { shortURL: req.params.shortURL, longURL: filteredURLs[req.params.shortURL].longURL, user: userObject };
   res.render("urls_show", templateVars);
 });
@@ -187,22 +186,21 @@ app.post("/urls", (req, res) => {
     res.redirect("/");
     return;
   } 
-  // console.log(urlDatabase);
+  
+  // add the http:// if it's missing
   req.body.longURL = cleanURL(req.body.longURL);
   // Add to the url
-  
   let randomString = generateRandomString();
-  
-  console.log("line 198 --- ", newURLEntry);
 
   // Create a new entry in the urlDatabase object
-  urlDatabase[randomString] = {longURL: req.body.longURL, userID: userObject.id, address: { street: 'king'}};
+  urlDatabase[randomString] = {longURL: req.body.longURL, userID: userObject.id};
   res.redirect("/urls/" + randomString); 
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   // Deletes a URL from the object
   const shortURL = req.params.shortURL;
+  console.log("line 204 --- ", shortURL);
   delete urlDatabase[shortURL];
 
   res.redirect("/urls");
