@@ -42,8 +42,7 @@ function cleanURL(inputURL) {
 
 function checkEmailExists(pEmail) {
   // function returns true if an e-mail exists in the data base
-  for (userObject in users) {
-    // move through the users objects
+  for (let userObject in users) {
     if (users[userObject].email.toLowerCase() === pEmail.toLowerCase()) {
       return true;
     }
@@ -53,9 +52,7 @@ function checkEmailExists(pEmail) {
 
 function validateUser(pEmail, pPwd) {
   // validates a email / password and returns a user object if validation is good
-  for (userObject in users) {
-
-    
+  for (let userObject in users) {
     // move through the users objects
     if (users[userObject].email.toLowerCase() === pEmail.toLowerCase()) {
       if (bcrypt.compareSync(pPwd, users[userObject].password)) {
@@ -251,7 +248,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL/update", (req, res)=> {
-  // Update a specific url by userID
+  /** Updates the shortURL */
   const shortURL = req.params.shortURL;
   let longURL = req.body.longURL;
   longURL = cleanURL(longURL);
@@ -272,21 +269,20 @@ app.post("/urls/:shortURL/update", (req, res)=> {
 });
 
 app.post("/login", (req, res)=> {
-  // retrieve values from the body
+  /* This route autheticates the user (looks up the email address/password) 
+  and sets a cookie, then redirects the user to /urls. If authentication fails
+  return the appropriate error code */
+
   const email = req.body.email;
   const password = req.body.password;
 
-  // Look up the e-mail in the DB
   if(checkEmailExists(email))
   {
-    // E-mail exists, validate the user
-    let userObj = validateUser(email, password);
+    const userObj = validateUser(email, password);
     if (userObj === null) {
- 
       res.sendStatus(401);
       return;
     } else {
-      // checks should pass
       console.log(`User ${userObj.email} has been successfully authenticated`);
       req.session.user_id = userObj.id;
       res.redirect('/urls');
@@ -297,14 +293,15 @@ app.post("/login", (req, res)=> {
 });
 
 app.post("/logout", (req, res)=> {
-  // User has clicked the log out button. Clear the cookie and direct them to the home page
+  // This route clears the cookie and directs them to the root (home page)
   req.session = null;
   res.redirect("/");
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  /* Redirects user to the appropriate longURL provided the shortURL is valid
+  otherwise, return an error */
   if (!urlDatabase[req.params.shortURL]) {
-    // Check if the shortURL exists - if not, throw a 404 error and abort
     res.sendStatus(404);
     return;
   }
