@@ -58,7 +58,6 @@ function validateUser(pEmail, pPwd) {
     // move through the users objects
     if (users[userObject].email.toLowerCase() === pEmail.toLowerCase()) {
       if (bcrypt.compareSync(pPwd, users[userObject].password)) {
-        //if (users[userObject].password === pPwd) {
         return users[userObject];
       }
     }
@@ -85,6 +84,7 @@ function urlsForUser(id) {
 }
 
 function updateURLDatabase(forID, forShortURL, withLongURL) {
+  /* helper function that adds a URL record to the databse*/
   if (urlDatabase[forShortURL].userID === forID) {
     urlDatabase[forShortURL].longURL = withLongURL;  
   } else {
@@ -113,7 +113,7 @@ function createTestUsers(numUsers) {
 }
 
 app.get("/", (req, res) => {
-  /* Renders the ho*/
+  /* If the user logged in, redirect to the /urls page, otherwise show login page */
   const key = req.session.user_id;
   const userObject = users[key];
   
@@ -123,14 +123,6 @@ app.get("/", (req, res) => {
   } else {
     res.redirect("/login")
   }
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 // Route handler for the URLs Index
@@ -150,7 +142,7 @@ app.get("/urls", (req, res)=> {
 });
 
 app.get("/urls/new", (req, res) => {
-  // Renders the page to create shortURL
+  // Renders the page to allow user to create shortURL
   let key = req.session.user_id;
   let userObject = users[key];
   if (!userObject) {
@@ -183,9 +175,8 @@ app.get("/urls/:shortURL", (req, res) => {
     res.sendStatus(401);
     return;
   }
-  // check if a url even exists
+  // check if a url even exists and return appropriate response
   if (!urlDatabase[req.params.shortURL]) {
-    // return a resource not found 
     res.sendStatus(404);
     return;
   }
@@ -265,7 +256,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL/update", (req, res)=> {
-  /* Updates the shortURL and re-directs the user */
+  // Updates the shortURL and re-directs the user
   const shortURL = req.params.shortURL;
   let longURL = req.body.longURL;
   longURL = cleanURL(longURL);
@@ -292,8 +283,7 @@ app.post("/login", (req, res)=> {
   const email = req.body.email;
   const password = req.body.password;
 
-  if(checkEmailExists(email))
-  {
+  if(checkEmailExists(email)) {
     const userObj = validateUser(email, password);
     if (userObj === null) {
       res.sendStatus(401);
