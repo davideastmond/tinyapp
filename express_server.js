@@ -42,13 +42,9 @@ function cleanURL(inputURL) {
 
 function checkEmailExists(pEmail) {
   // function returns true if an e-mail exists in the data base
-  //console.log("Quering e-mail: ", pEmail);
   for (userObject in users) {
-    //console.log(users[userObject].email);
-    
     // move through the users objects
     if (users[userObject].email.toLowerCase() === pEmail.toLowerCase()) {
-      //console.log("returned true!");
       return true;
     }
   }
@@ -58,11 +54,10 @@ function checkEmailExists(pEmail) {
 function validateUser(pEmail, pPwd) {
   // validates a email / password and returns a user object if validation is good
   for (userObject in users) {
-    //console.log(users[userObject].email);
+
     
     // move through the users objects
     if (users[userObject].email.toLowerCase() === pEmail.toLowerCase()) {
-      //console.log("returned true!");
       if (bcrypt.compareSync(pPwd, users[userObject].password)) {
         //if (users[userObject].password === pPwd) {
         return users[userObject];
@@ -94,7 +89,6 @@ function updateURLDatabase(forID, forShortURL, withLongURL) {
   if (urlDatabase[forShortURL].userID === forID) {
     urlDatabase[forShortURL].longURL = withLongURL;  
   } else {
-    console.log("updating urldb ", urlDatabase[forShortURL])
     return -1;
   }
   return 0;
@@ -122,7 +116,13 @@ app.get("/", (req, res) => {
   // This should be a landing page
   let key = req.session.user_id;
   let userObject = users[key];
+  
+  if (userObject) {
+    res.redirect("/urls");
+    return;
+  }
 
+  // If logged in, redirect to urls
   let tempVars = {user: userObject};
   res.render("home", tempVars);
 });
@@ -144,6 +144,7 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res)=> {
   let key = req.session.user_id;
   let userObject = users[key];
+
   if (!userObject) {
     console.log("Not authenticated: redirecting");
     res.redirect("/");
@@ -153,21 +154,21 @@ app.get("/urls", (req, res)=> {
     let templateVars = { urls: filtered_db, user: userObject };
     res.render("urls_index", templateVars);
   }
-  
 });
 
 app.get("/urls/new", (req, res) => {
+  // Renders the page to create shortURL
   let key = req.session.user_id;
   let userObject = users[key];
   if (!userObject) {
-    console.log("User not logged in, redirecting");
+    // User is not logged in, redirect to login page
     res.redirect("/login");
     return;
   }
   let templateVars = { user: userObject };
   res.render("urls_new", templateVars );
-  
 });
+
 app.get("/register", (req, res)=> {
   // Will serve up the registration page template
   res.render("register");
@@ -182,6 +183,11 @@ app.get("/urls/:shortURL", (req, res) => {
     return;
   }
   // check if a url even exists
+  if (!urlDatabase[req.params.shortURL]) {
+    // return a resource not found 
+    res.sendStatus(404);
+    return;
+  }
 
   // Get a filtered list and then only show that particular shortURL
   let filteredURLs = urlsForUser(userObject.id);
@@ -196,26 +202,25 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.get("/urls/:shortURL/delete", (req, res)=> {
-  // Find the shortURL
-  let shortURL = req.params.shortURL;
-  console.log("line 181 --", shortURL);
-  delete urlDatabase[shortURL];
-  res.redirect("/urls");
-});
-
 app.get("/login", (req, res) => {
-  // Will render a login page to the client
-  res.render("login");
+  // If there is a session, redirect to the urls
+  let key = req.session.user_id;
+  let userObject = users[key];
+  if (userObject) {
+    res.redirect("/urls");
+  } else {
+    res.render("login");
+  }
+ 
 });
 
 app.post("/urls", (req, res) => {
   let key = req.session.user_id;
   let userObject = users[key];
-  console.log("206: ", key);
+
   if (!userObject) {
-    console.log("User not logged in");
-    res.redirect("/");
+    // User not logged
+    res.sendStatus(401);
     return;
   } 
   
@@ -226,48 +231,50 @@ app.post("/urls", (req, res) => {
 
   // Create a new entry in the urlDatabase object
   urlDatabase[randomString] = {longURL: req.body.longURL, userID: userObject.id};
-  res.redirect("/urls"); 
+  res.redirect("/urls/" + randomString); 
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   // Deletes a URL from the object
-  const shortURL = req.params.shortURL;
-  console.log("line 204 --- ", shortURL);
-  delete urlDatabase[shortURL];
 
+  // First check if the user is logged in
+  let key = req.session.user_id;
+  let userObject = users[key];
+
+  if (!userObject) {
+    res.sendStatus(400);
+    return;
+  } 
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL/update", (req, res)=> {
-  // Update a specific url by userID /
+  // Update a specific url by userID
   const shortURL = req.params.shortURL;
   let longURL = req.body.longURL;
   longURL = cleanURL(longURL);
-  console.log(shortURL, " ", longURL);
 
   let key = req.session.user_id;
   let userObject = users[key];
   if (!userObject) {
-    console.log("User not authenticated: redirecting");
     res.redirect("/");
   } else {
     let result = updateURLDatabase(userObject.id, shortURL, longURL);
     if (result < 0) {
-      console.log("There was a problem updating the URL entry.");
+      // Problem updating the database, send appro
+      res.sendStatus(400);
     } else {
-      console.log("URL UPDATE should be good");
       res.redirect("/urls");
     }
   }
-
-  
 });
 
 app.post("/login", (req, res)=> {
   // retrieve values from the body
   const email = req.body.email;
   const password = req.body.password;
-  console.log("got a login e-mail: ", email, password);
 
   // Look up the e-mail in the DB
   if(checkEmailExists(email))
@@ -275,17 +282,13 @@ app.post("/login", (req, res)=> {
     // E-mail exists, validate the user
     let userObj = validateUser(email, password);
     if (userObj === null) {
-      console.log(email, " ", password);
-      console.log("object", userObj);
+ 
       res.sendStatus(401);
       return;
     } else {
       // checks should pass
       console.log(`User ${userObj.email} has been successfully authenticated`);
       req.session.user_id = userObj.id;
-      
-      console.log("269: ", req.session.user_id);
-      //res.cookie('user_id', userObj.id);
       res.redirect('/urls');
     }
   } else {
@@ -300,9 +303,12 @@ app.post("/logout", (req, res)=> {
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    // Check if the shortURL exists - if not, throw a 404 error and abort
+    res.sendStatus(404);
+    return;
+  }
   const longURL = urlDatabase[req.params.shortURL].longURL;
-  console.log("long URL IS: " + longURL);
-  
   res.redirect(longURL);
 });
 
