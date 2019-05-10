@@ -178,14 +178,20 @@ app.get("/urls/:shortURL", (req, res) => {
   let key = req.session.user_id;
   let userObject = users[key];
   if (!userObject) {
-    console.log("User not authenticated: redirecting");
-    res.redirect("/");
+    res.sendStatus(401);
+    return;
   }
-  
+  // check if a url even exists
+
   // Get a filtered list and then only show that particular shortURL
   let filteredURLs = urlsForUser(userObject.id);
-  console.log(" line 172 - user object ID: ", userObject.id);
-  
+
+  // If this object is null, that means the URL does not belong to the currently
+  // logged in user; throw a status code 404
+  if (Object.keys(filteredURLs).length === 0) {
+    res.sendStatus(401);
+    return;
+  }
   let templateVars = { shortURL: req.params.shortURL, longURL: filteredURLs[req.params.shortURL].longURL, user: userObject };
   res.render("urls_show", templateVars);
 });
@@ -196,12 +202,12 @@ app.get("/urls/:shortURL/delete", (req, res)=> {
   console.log("line 181 --", shortURL);
   delete urlDatabase[shortURL];
   res.redirect("/urls");
-})
+});
 
 app.get("/login", (req, res) => {
   // Will render a login page to the client
   res.render("login");
-})
+});
 
 app.post("/urls", (req, res) => {
   let key = req.session.user_id;
