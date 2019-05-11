@@ -121,7 +121,7 @@ app.get("/", (req, res) => {
     res.redirect("/urls");
     return;
   } else {
-    res.redirect("/login")
+    res.redirect("/login");
   }
 });
 
@@ -266,7 +266,7 @@ app.post("/urls/:shortURL/update", (req, res)=> {
   if (!userObject) {
     res.redirect("/");
   } else {
-    let result = updateURLDatabase(userObject.id, shortURL, longURL);
+    const result = updateURLDatabase(userObject.id, shortURL, longURL);
     if (result < 0) {
       res.sendStatus(400);
     } else {
@@ -323,7 +323,7 @@ app.post("/register", (req, res)=> {
     return; 
   }
   if (checkEmailExists(gemail)) {
-    res.statusMessage = "Email address already exists in the database."
+    res.statusMessage = "Email address already exists in the database.";
     res.sendStatus(400);
     return;
   }
@@ -333,14 +333,14 @@ app.post("/register", (req, res)=> {
     id: gid,
     email:gemail,
     password: hashedPassword
-  }
+  };
 
   /* append to the object data base
   set a cookie containing the newly generated ID */
   users[gid] = newUserObject; 
   req.session.user_id = gid;
   res.redirect('/urls');
-})
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
